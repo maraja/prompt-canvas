@@ -8,9 +8,10 @@ Lay out cards for your goal, who you are, how you work, examples, templates, con
 - Files connected to a card are written inside that card's part of the prompt
 - `{{blanks}}` are filled in at export, so one board works as a reusable template
 - Coverage meter shows which sections are missing; Compare puts two boards side by side
+- Save any card (About me, How I work, a screenshot…) to your library and drop it into future boards
 - Markdown editor, undo/redo, light and dark themes
 
-Everything stays in your browser (IndexedDB). Nothing is uploaded anywhere.
+Everything stays in your browser (boards in IndexedDB, saved blocks in localStorage). Nothing is uploaded anywhere.
 
 ## Run locally
 

@@ -393,6 +393,39 @@ dialog .btn.danger:active { transform: translateY(1px); box-shadow: none; }
 .varform input { width: 100%; margin: 0; height: 38px; }
 #out .vchip { font-size: 1em; }
 
+/* saved blocks library */
+#lib { position: fixed; top: 56px; left: 0; bottom: 0; width: min(360px, 100vw); z-index: 41; background: var(--surface); border-right: 1px solid var(--ink);
+  box-shadow: var(--lift-lg); display: flex; flex-direction: column; transform: translateX(-104%); transition: transform .34s cubic-bezier(.2, .9, .2, 1); }
+#lib.open { transform: none; }
+#lib .lh { padding: 18px 18px 12px; border-bottom: 1px solid var(--rule); }
+#lib .lh .t { display: flex; align-items: flex-start; justify-content: space-between; }
+#lib .fig { font: 400 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--olive); }
+#lib h2 { margin: 4px 0 0; font: 700 26px/1.05 var(--display); letter-spacing: -.025em; }
+#lib .search { margin-top: 14px; width: 100%; height: 36px; border: 1px solid var(--rule-2); background: var(--canvas); padding: 0 10px; font-size: 14px; }
+#lib .search:focus { outline: 2px solid var(--highlight); outline-offset: -1px; border-color: var(--ink); }
+#lib .list { flex: 1; overflow: auto; padding: 8px 14px 18px; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
+#lib .grp { font: 400 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 14px 4px 6px; display: flex; align-items: center; gap: 8px; }
+#lib .grp i { width: 9px; height: 9px; background: var(--t); }
+.blk { position: relative; display: flex; gap: 10px; padding: 10px 10px 10px 12px; margin-bottom: 6px; background: var(--canvas); border: 1px solid var(--rule); border-left: 4px solid var(--t);
+  cursor: grab; transition: transform .16s var(--snap), box-shadow .16s, border-color .15s; animation: rise .3s var(--ease) both; animation-delay: calc(var(--i, 0) * 25ms); }
+.blk:hover { transform: translateX(3px); box-shadow: var(--lift-sm); border-color: var(--rule-2); border-left-color: var(--t); }
+.blk:active { cursor: grabbing; transform: scale(.98); }
+.blk.dragging { opacity: .45; }
+.blk .bt { flex: 1; min-width: 0; }
+.blk b { display: block; font: 700 14.5px/1.25 var(--display); letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.blk p { margin: 3px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.blk .meta { font: 400 10px var(--mono); color: var(--faint); margin-top: 5px; letter-spacing: .04em; }
+.blk img { width: 46px; height: 46px; object-fit: cover; border: 1px solid var(--rule); flex: none; }
+.blk .acts { display: flex; flex-direction: column; gap: 2px; opacity: 0; transition: opacity .15s; }
+.blk:hover .acts, .blk:focus-within .acts { opacity: 1; }
+.blk .ib { width: 26px; height: 26px; }
+.blk .ib.add:hover { background: var(--highlight); color: #23241E; }
+#lib .emptylib { margin: 18px 6px; padding: 16px; border: 1px dashed var(--rule-2); color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+#lib .emptylib b { color: var(--ink); }
+#lib .lf { padding: 10px 18px 14px; border-top: 1px solid var(--rule); font: 400 10.5px var(--mono); color: var(--faint); letter-spacing: .04em; }
+.card .from { font: 700 9.5px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--olive); border: 1px solid currentColor; padding: 3px 4px; white-space: nowrap; }
+#libBtn.bump { animation: segpop .45s var(--snap); }
+
 /* compare */
 #compare { position: fixed; inset: 56px 0 0 0; z-index: 45; background: var(--canvas); display: none; flex-direction: column; overflow: auto; }
 #compare.open { display: flex; animation: fadein .2s; }
@@ -444,6 +477,7 @@ dialog .btn.danger:active { transform: translateY(1px); box-shadow: none; }
   <div class="sep"></div>
   <button class="btn icon" id="undoBtn" title="Undo (⌘Z)"><svg class="i"><use href="#i-undo"/></svg></button>
   <button class="btn icon" id="moreBtn" title="More" aria-haspopup="menu"><svg class="i"><use href="#i-more"/></svg></button>
+  <button class="btn" id="libBtn" title="Saved blocks you can reuse in any board (L)"><svg class="i"><use href="#i-book"/></svg><span class="lbl">Library</span></button>
   <button class="btn" id="compareBtn" title="Compare two boards side by side (C)"><svg class="i"><use href="#i-cols"/></svg><span class="lbl">Compare</span></button>
   <button class="btn outline" id="previewBtn" title="Preview prompt (P)"><svg class="i"><use href="#i-panel"/></svg><span class="lbl">Preview</span></button>
   <button class="btn primary" id="exportBtn" title="Download PROMPT.md with every file"><svg class="i"><use href="#i-download"/></svg><span class="lbl">Export .zip</span></button>
@@ -480,6 +514,12 @@ dialog .btn.danger:active { transform: translateY(1px); box-shadow: none; }
 </aside>
 
 <div class="meter paper" id="meter" aria-label="Prompt coverage"></div>
+<aside id="lib" class="paper" aria-label="Saved blocks">
+  <div class="lh"><div class="t"><div><div class="fig">Reusable · this browser</div><h2>Saved blocks</h2></div><button class="ib" id="closeLib" title="Close (L)"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <input class="search" id="libSearch" placeholder="Search saved blocks" autocomplete="off" aria-label="Search saved blocks"></div>
+  <div class="list" id="libList"></div>
+  <div class="lf">Drag a block onto the board, or click + to drop it in the middle.</div>
+</aside>
 <section id="compare" class="paper" aria-label="Compare boards"></section>
 <button class="bin" id="bin" title="Drag a card here to delete it"><span class="tip">Drop to delete</span><svg viewBox="0 0 24 24"><g class="lid"><path d="M3 6h18"/><path d="M9 6V3h6v3"/></g><path d="M5.5 6l1 15h11l1-15"/><path d="M10 10v7M14 10v7"/></svg></button>
 <div class="zoom paper">
@@ -518,6 +558,8 @@ dialog .btn.danger:active { transform: translateY(1px); box-shadow: none; }
   <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
   <symbol id="i-dup" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
   <symbol id="i-paste" viewBox="0 0 24 24"><path d="M9 4h6v3H9z"/><path d="M15 5h3v16H6V5h3"/><path d="M9 12h6M9 16h4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>
   <symbol id="i-cols" viewBox="0 0 24 24"><rect x="3" y="4" width="7.5" height="16"/><rect x="13.5" y="4" width="7.5" height="16"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
   <symbol id="i-broom" viewBox="0 0 24 24"><path d="M3 21l7-7M14 4l6 6-6 6-6-6z"/></symbol>
@@ -748,6 +790,7 @@ function renderCard(c) {
     <div class="head">
       <span class="num"></span>
       <button class="chip" title="Change section" aria-haspopup="menu"><span class="tl">${t.label}</span>${icon("chev")}</button>
+      ${libHas(c.libId) ? `<span class="from" title="Inserted from your saved blocks">Saved</span>` : ""}
       <span class="grow"></span>
       <button class="ib eye" title="${c.on ? "Included in prompt. Click to leave it out." : "Left out of prompt. Click to include."}">${icon(c.on ? "eye" : "eyeoff")}</button>
       <button class="ib more" title="More" aria-haspopup="menu">${icon("more")}</button>
@@ -853,6 +896,7 @@ function wireCard(c, el) {
     "sep",
     { label: "Edit", icon: "edit", kbd: "↵", onSelect: () => openEditor(c.id) },
     { label: "Fit card to text", icon: "fit", onSelect: () => fitCard(c) },
+    libHas(c.libId) ? { label: "Update saved block", icon: "save", onSelect: () => saveBlock(c, true) } : { label: "Save to library", icon: "save", onSelect: () => saveBlock(c) },
     { label: "Delete…", icon: "trash", kbd: "⌫", danger: true, onSelect: () => confirmDelete([c.id]) },
   ]);
   el.addEventListener("dblclick", e => { if (!e.target.closest("button,video,.port,.rz,.conns")) openEditor(c.id, e.target.closest(".txt") ? "body" : "title"); });
@@ -1009,6 +1053,7 @@ function openEditor(id, focus = "body") {
     <div class="conns"></div>
     <div class="foot"><span class="meta"><span class="wc"></span><span class="saved">Saved</span>${note ? `<span class="hint">⌘V or drop to attach screenshots</span>` : ""}</span>
       ${note ? `<button class="btn outline attach">${icon("clip")}Attach files</button>` : ""}
+      <button class="btn outline savelib">${icon("save")}${libHas(c.libId) ? "Update saved block" : "Save to library"}</button>
       <button class="btn dangerline del">${icon("trash")}Delete</button>
       <button class="btn primary done">Done</button></div></div>`;
   const title = ed.querySelector(".etitle"), ta = ed.querySelector("textarea"), saved = ed.querySelector(".saved"), view = ed.querySelector(".mdview");
@@ -1054,6 +1099,7 @@ function openEditor(id, focus = "body") {
   ed.querySelector(".eye").onclick = e => { toggleOn(c); e.currentTarget.innerHTML = icon(c.on ? "eye" : "eyeoff"); };
   ed.querySelector(".close").onclick = closeEditor; ed.querySelector(".done").onclick = closeEditor;
   ed.querySelector(".attach")?.addEventListener("click", () => pickFiles(c.id));
+  ed.querySelector(".savelib").onclick = async e => { const b = e.currentTarget; if (await saveBlock(c, libHas(c.libId))) b.innerHTML = icon("save") + "Update saved block"; };
   ed.querySelector(".del").onclick = async () => { closeEditor(); setTimeout(() => confirmDelete([c.id]), 260); };
   ed.querySelector(".media img")?.addEventListener("click", () => lightbox(urlFor(c.fileId)));
   renderEdConns();
@@ -1223,6 +1269,8 @@ boardEl.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth 
 boardEl.addEventListener("dragover", e => { e.preventDefault(); if (hasFiles(e)) setTarget(noteUnder(e), "Drop to attach to this card"); });
 boardEl.addEventListener("drop", e => {
   e.preventDefault(); dragDepth = 0; boardEl.classList.remove("dragover");
+  const blockId = e.dataTransfer.getData("application/x-prompt-block");
+  if (blockId) { setTarget(null); const p = toWorld(e.clientX, e.clientY); return insertBlock(blockId, { x: p.x - 40, y: p.y - 30 }); }
   const k = noteUnder(e); setTarget(null);
   const fs = [...e.dataTransfer.files], p = toWorld(e.clientX, e.clientY);
   if (fs.length) return addFiles(fs, { at: p, attachTo: k?.dataset.id });
@@ -1366,6 +1414,77 @@ function togglePreview(force) {
   $("#previewBtn").classList.toggle("on", open); if (open) renderPreview();
 }
 $("#previewBtn").onclick = () => togglePreview(); $("#closeDrawer").onclick = () => togglePreview(false);
+
+/* ================= saved blocks (localStorage) ================= */
+const LIB_KEY = "prompt-canvas.library.v1", LIB_FILE_MAX = 2.5e6; // files bigger than this aren't kept in the library
+function libLoad() { try { return JSON.parse(localStorage.getItem(LIB_KEY) || "[]"); } catch { return []; } }
+function libStore(list) {
+  try { localStorage.setItem(LIB_KEY, JSON.stringify(list)); return true; }
+  catch (e) { toast(e?.name === "QuotaExceededError" ? "Library is full. Remove a few saved files first." : "Couldn't save: browser storage is blocked"); return false; }
+}
+let library = libLoad();
+const libHas = id => !!id && library.some(b => b.id === id);
+const blobToDataURL = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(b); });
+async function saveBlock(c, update = false) {
+  const blob = c.fileId && blobs.get(c.fileId);
+  if (isFile(c) && blob && blob.size > LIB_FILE_MAX) { toast(`That file is ${fmtSize(blob.size)}; the library keeps files up to ${fmtSize(LIB_FILE_MAX)}`); return false; }
+  const now = Date.now(), prev = update && library.find(b => b.id === c.libId);
+  const block = { id: prev ? prev.id : uid(), kind: c.kind, type: c.type, title: c.title, body: c.body, w: c.w, h: c.h,
+    fileName: c.fileName, mime: c.mime, size: c.size, text: c.text, data: blob ? await blobToDataURL(blob) : undefined, savedAt: prev?.savedAt || now, updatedAt: now };
+  const next = prev ? library.map(b => b.id === prev.id ? block : b) : [block, ...library];
+  if (!libStore(next)) return false;
+  library = next; c.libId = block.id; save();
+  const el = cardEl(c.id); if (el && !el.querySelector(".from")) el.querySelector(".head .grow").insertAdjacentHTML("beforebegin", `<span class="from" title="Inserted from your saved blocks">Saved</span>`);
+  $("#libBtn").classList.remove("bump"); void $("#libBtn").offsetWidth; $("#libBtn").classList.add("bump");
+  renderLib(); toast(prev ? `Updated “${nameOf(c)}” in your library` : `Saved “${nameOf(c)}” to your library`);
+  return true;
+}
+async function insertBlock(id, at) {
+  const b = library.find(x => x.id === id); if (!b) return;
+  if (!at) at = viewCenter(-(b.w || 340) / 2 + (Math.random() * 40 - 20), -(b.h || 220) / 2 + (Math.random() * 40 - 20));
+  let fileId;
+  if (b.data) { fileId = uid(); const blob = await (await fetch(b.data)).blob(); await putBlob(fileId, new File([blob], b.fileName || "file", { type: b.mime || blob.type })); }
+  const c = addCard({ kind: b.kind, type: b.type, title: b.title, body: b.body, w: b.w || 340, h: b.h || 220, fileName: b.fileName, mime: b.mime, size: b.size, text: b.text,
+    fileId, libId: b.id, x: Math.round(at.x / SNAP) * SNAP, y: Math.round(at.y / SNAP) * SNAP });
+  select(c.id); toast(`Added “${nameOf(c)}” from your library`);
+}
+async function deleteBlock(id) {
+  const b = library.find(x => x.id === id); if (!b) return;
+  if (!await ask({ title: `Remove “${b.title || TYPE[b.type].label}” from the library?`, text: "Cards already on your boards stay where they are.", ok: "Remove", danger: true })) return;
+  library = library.filter(x => x.id !== id); libStore(library); renderLib();
+  B().cards.filter(c => c.libId === id).forEach(c => cardEl(c.id)?.querySelector(".from")?.remove());
+}
+function renderLib() {
+  const q = $("#libSearch").value.trim().toLowerCase(), list = $("#libList");
+  if (!library.length) {
+    list.innerHTML = `<div class="emptylib"><b>Nothing saved yet.</b><br>Open a card's ⋯ menu (or the editor) and choose <b>Save to library</b>. Good ones to keep: About me, How I work, your constraints, and output formats you like.</div>`;
+    return;
+  }
+  const hits = library.filter(b => !q || `${b.title} ${b.body} ${b.fileName || ""} ${TYPE[b.type]?.label}`.toLowerCase().includes(q));
+  if (!hits.length) { list.innerHTML = `<div class="emptylib">No saved blocks match “${esc(q)}”.</div>`; return; }
+  let i = 0;
+  list.innerHTML = TYPES.filter(t => hits.some(b => b.type === t.id)).map(t => `<div class="grp" style="--t:${t.color}"><i></i>${t.label}</div>` +
+    hits.filter(b => b.type === t.id).map(b => `<div class="blk" draggable="true" data-id="${b.id}" style="--t:${t.color};--i:${i++}" title="Drag onto the board">
+      ${b.kind === "image" && b.data ? `<img src="${b.data}" alt="">` : ""}
+      <div class="bt"><b>${esc(b.title || (b.kind === "note" ? "Untitled" : b.fileName))}</b>${b.body.trim() ? `<p>${esc(b.body.replace(/[#*_>`-]+/g, " ").slice(0, 160))}</p>` : ""}
+        <div class="meta">${b.kind === "note" ? `${(b.body.match(/\S+/g) || []).length} words` : esc(b.fileName || "")} · ${new Date(b.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</div></div>
+      <div class="acts"><button class="ib add" title="Add to this board">${icon("plus")}</button><button class="ib rm" title="Remove from library">${icon("trash")}</button></div></div>`).join("")).join("");
+  list.querySelectorAll(".blk").forEach(el => {
+    el.querySelector(".add").onclick = e => { e.stopPropagation(); insertBlock(el.dataset.id); };
+    el.querySelector(".rm").onclick = e => { e.stopPropagation(); deleteBlock(el.dataset.id); };
+    el.ondblclick = () => insertBlock(el.dataset.id);
+    el.ondragstart = e => { e.dataTransfer.setData("application/x-prompt-block", el.dataset.id); e.dataTransfer.effectAllowed = "copy"; el.classList.add("dragging"); };
+    el.ondragend = () => el.classList.remove("dragging");
+  });
+}
+function toggleLib(force) {
+  const open = $("#lib").classList.toggle("open", force);
+  $("#libBtn").classList.toggle("on", open);
+  if (open) { library = libLoad(); renderLib(); closeCompare(); }
+}
+$("#libBtn").onclick = () => toggleLib(); $("#closeLib").onclick = () => toggleLib(false);
+$("#libSearch").oninput = renderLib;
+addEventListener("storage", e => { if (e.key === LIB_KEY) { library = libLoad(); if ($("#lib").classList.contains("open")) renderLib(); } });
 
 /* ================= coverage ================= */
 const NUDGE = {
@@ -1541,6 +1660,7 @@ function showKeys() {
     <span>Zoom</span><span><kbd>⌘</kbd> + scroll · pinch</span>
     <span>Preview the prompt</span><span><kbd>P</kbd></span>
     <span>Compare two boards</span><span><kbd>C</kbd></span>
+    <span>Saved blocks</span><span><kbd>L</kbd></span>
     <span>Fill-in blank</span><span>type {{topic}} in any card</span>
     <span>Fit everything</span><span><kbd>F</kbd></span>
     <span>Duplicate · delete</span><span><kbd>⌘D</kbd> · <kbd>⌫</kbd></span>
@@ -1572,6 +1692,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "n") { e.preventDefault(); newNote(); }
   if (e.key === "p") togglePreview();
   if (e.key === "c") $("#compareBtn").click();
+  if (e.key === "l") toggleLib();
   if (e.key === "f") fitAll();
   if (e.key === "?") showKeys();
   if (e.key === "=" || e.key === "+") zoomAt(1.2);
